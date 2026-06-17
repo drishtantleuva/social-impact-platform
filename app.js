@@ -1,22 +1,16 @@
 /* Beyond the Tonne — client-side social-impact engine.
-   Scoring weights are a Ridge model fit on the real research dataset of 161
-   carbon-credit projects (log-transformed Social-Impact index), exported to JS
-   so the demo runs entirely in the browser. */
+   This is the ACTUAL formula from the research (it reproduces the dataset's
+   Social-Impact index exactly). Job count is DERIVED from project scale, host
+   country and methodology — exactly as in the original work — not entered. */
 
-const SCORING = {
-  intercept: 0.4189,
-  w: { SDG_1:0.0958,SDG_2:0.0506,SDG_3:-0.0287,SDG_4:0.0721,SDG_5:0.0219,SDG_6:0.0511,
-       SDG_7:0.0763,SDG_8:0.1583,SDG_9:0.0027,SDG_10:0.0031,SDG_11:-0.0354,SDG_12:-0.0103,
-       SDG_13:0.0511,SDG_14:-0.0498,SDG_15:0.0399,SDG_16:0.0219,SDG_17:0.1301,
-       dev:-0.0065,scl:0.0827,logER:-0.1131,jobs:0.2832 },
-  mean: { SDG_1:0.0559,SDG_2:0.0311,SDG_3:0.0994,SDG_4:0.0497,SDG_5:0.0248,SDG_6:0.0311,
-          SDG_7:0.1304,SDG_8:0.1553,SDG_9:0.0186,SDG_10:0.0311,SDG_11:0.0124,SDG_12:0.0186,
-          SDG_13:0.9006,SDG_14:0.0124,SDG_15:0.087,SDG_16:0.0248,SDG_17:0.0248,
-          dev:1.512,scl:2.857,logER:11.517,jobs:513.5 },
-  std: { SDG_1:0.230,SDG_2:0.174,SDG_3:0.300,SDG_4:0.218,SDG_5:0.156,SDG_6:0.174,SDG_7:0.338,
-         SDG_8:0.363,SDG_9:0.136,SDG_10:0.174,SDG_11:0.111,SDG_12:0.136,SDG_13:0.300,SDG_14:0.111,
-         SDG_15:0.283,SDG_16:0.156,SDG_17:0.156,dev:0.696,scl:1.004,logER:2.011,jobs:593.5 }
-};
+// derived job count = base(scale) × country factor × methodology factor
+const JOB_BASE = { "Micro Scale":5, "Small Scale":30, "Medium Scale":125, "Large Scale":850 };
+const COUNTRY_FACTOR = { "Under Developed":1.7, "Developing":1.4, "Developed":1.0, "High Developed":0.7 };
+const METHOD_FACTOR = { "Renewables":1.2, "Energy efficiency":1.0, "Community-based":1.3,
+  "Re/afforestation":1.4, "REDD+":1.1, "IFM":1.1, "HIR":1.0, "Landfill gas capture":0.9,
+  "Savanna burning":1.2, "Avoided deforestation":1.1 };
+const JOBS_MAX = 1547;          // dataset max, used to normalise jobs (CI)
+const SI_SCALE = Math.log1p(12); // maps Social-Impact → 0..100
 
 const SDG = [
  [1,"No poverty","#E5243B"],[2,"Zero hunger","#DDA63A"],[3,"Good health","#4C9F38"],
@@ -61,17 +55,21 @@ function paintChips(){
   });
 }
 
-// ---- scoring ----
-function z(k,x){ return (x-SCORING.mean[k])/SCORING.std[k]; }
+// ---- scoring (the research's actual formula) ----
 function compute(){
-  const dev=+devEl.value, scl=+sclEl.value, er=+erEl.value, jobs=+jobsEl.value;
-  const logER=Math.log1p(er);
-  let lp=SCORING.intercept, contrib={};
-  for(let i=1;i<=17;i++){ const k="SDG_"+i, v=selected.has(i)?1:0, c=SCORING.w[k]*z(k,v); lp+=c; contrib[k]=c; }
-  [["dev",dev],["scl",scl],["logER",logER],["jobs",jobs]].forEach(([k,v])=>{ const c=SCORING.w[k]*z(k,v); lp+=c; contrib[k]=c; });
-  const impact=Math.max(0,Math.expm1(lp));
-  const score=Math.min(100,Math.round(100*Math.log1p(impact)/Math.log1p(8)));
-  return {impact,score,contrib,dev,scl,er,jobs};
+  const scale=sclEl.value, country=devEl.value, method=methodEl.value, er=+erEl.value;
+  // derived job count
+  const base=JOB_BASE[scale], cf=COUNTRY_FACTOR[country], mf=METHOD_FACTOR[method];
+  const jobs=Math.round(base*cf*mf);
+  // formula terms
+  const SDGA=selected.size;                                   // SDG Alignment Score
+  const CI=jobs/JOBS_MAX;                                     // jobs intensity (normalised)
+  const ME=SDGA>1?1.5:(SDGA===1?1:0);                         // multiplier effect
+  const erTerm=1-1/Math.max(er,1.0001);                       // emission-scale factor (→1 when large)
+  const impact=Math.max(0, erTerm*SDGA*CI*ME);
+  const score=Math.min(100,Math.round(100*Math.log1p(impact)/SI_SCALE));
+  return {impact,score,jobs,base,cf,mf,SDGA,CI,ME,erTerm,scale,country,method,er,
+    terms:{ "SDG alignment":SDGA, "Jobs intensity":CI, "Multiplier (breadth)":ME, "Emission scale":erTerm }};
 }
 
 // ---- charts ----
@@ -102,8 +100,8 @@ function render(){
 
   // radar
   const dimVals=Object.entries(DIMS).map(([d,gs])=>{
-    let s=0; gs.forEach(g=>{ if(selected.has(g)) s+=Math.max(0,SCORING.w["SDG_"+g]); });
-    return Math.min(100, Math.round(s/0.30*100));
+    const hit=gs.filter(g=>selected.has(g)).length;
+    return Math.round(100*hit/gs.length);
   });
   radar.setOption({...dark,radar:{indicator:Object.keys(DIMS).map(d=>({name:d,max:100})),
     radius:"66%",axisName:{color:"#9fb8ad",fontSize:10},splitLine:{lineStyle:{color:"rgba(255,255,255,.08)"}},
@@ -118,15 +116,19 @@ function render(){
     ,emphasis:{scale:true}}],
     tooltip:{trigger:"item",formatter:p=>p.name}});
 
-  // why bars (top contributions, log space)
-  const labelMap={dev:"Host country",scl:"Project scale",logER:"Emission scale",jobs:"Jobs created"};
-  let items=Object.entries(r.contrib).map(([k,v])=>[k.startsWith("SDG")?("SDG "+k.split("_")[1]+" · "+SDG_NAME[+k.split("_")[1]]):labelMap[k],v]);
-  items=items.filter(i=>Math.abs(i[1])>0.001).sort((a,b)=>a[1]-b[1]); // asc for horizontal
-  items=items.slice(-8);
+  // why bars — the score is a product, so each factor's log-contribution shows
+  // how much it multiplies the result up (green) or drags it down (red)
+  const L=x=>Math.log(Math.max(x,1e-6));
+  let items=[
+    ["SDG alignment ("+r.SDGA+" goals)", L(Math.max(r.SDGA,1e-6))],
+    ["Jobs intensity ("+(r.CI*100).toFixed(0)+"% of max)", L(r.CI)],
+    ["Breadth multiplier (×"+r.ME+")", L(Math.max(r.ME,1e-6))],
+    ["Emission scale", L(r.erTerm)]
+  ].sort((a,b)=>a[1]-b[1]);
   whyB.setOption({...dark,grid:{left:4,right:14,top:6,bottom:6,containLabel:true},
     xAxis:{type:"value",axisLabel:{show:false},splitLine:{show:false},axisLine:{show:false}},
-    yAxis:{type:"category",data:items.map(i=>i[0]),axisLabel:{color:"#9fb8ad",fontSize:9},axisLine:{show:false},axisTick:{show:false}},
-    series:[{type:"bar",data:items.map(i=>({value:+i[1].toFixed(3),itemStyle:{color:i[1]>=0?"#34d399":"#fb7185",borderRadius:3}})),barWidth:"62%"}]});
+    yAxis:{type:"category",data:items.map(i=>i[0]),axisLabel:{color:"#9fb8ad",fontSize:9.5},axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:"bar",data:items.map(i=>({value:+i[1].toFixed(2),itemStyle:{color:i[1]>=0?"#34d399":"#fb7185",borderRadius:3}})),barWidth:"58%"}]});
 
   // baseline vs typical
   base.setOption({...dark,grid:{left:4,right:14,top:10,bottom:18,containLabel:true},
@@ -154,18 +156,19 @@ function render(){
 }
 
 function explain(r){
-  const labelMap={dev:"the host country's development level",scl:"the project's scale",logER:"its emission-reduction profile",jobs:"the jobs it creates"};
-  const pos=Object.entries(r.contrib).filter(([k,v])=>v>0.01)
-    .sort((a,b)=>b[1]-a[1]).slice(0,3)
-    .map(([k])=>k.startsWith("SDG")?("SDG "+k.split("_")[1]+" ("+SDG_NAME[+k.split("_")[1]]+")"):labelMap[k]);
   const band=r.score>=66?"a high":r.score>=40?"a moderate":"a limited";
   const sdgList=[...selected].sort((a,b)=>a-b).map(n=>SDG_NAME[n]);
   let txt=`This project scores <b>${r.score}/100</b> — ${band} social-impact profile. `;
-  txt+= pos.length?`The score is driven most by ${pos.join(", ")}. `:`No strong positive drivers are present yet — claiming the SDGs the project genuinely supports would raise the score. `;
-  txt+= sdgList.length?`Its claimed contributions span ${sdgList.length} SDG${sdgList.length>1?"s":""} (${sdgList.slice(0,5).join(", ")}${sdgList.length>5?"…":""}). `:"";
-  txt+= r.jobs>=300?`With ~${r.jobs.toLocaleString()} jobs, employment is a major lever here — decent work (SDG 8) is the single strongest signal in the model. `
-       : `Job creation is modest; in this dataset employment is the strongest driver of social impact, so it's where this project could grow most. `;
-  txt+= `Note the model <i>decomposes</i> a constructed impact index — it shows what the score is made of, not an external ground truth.`;
+  txt+= `Because it's a <b>${r.scale.replace(' Scale','').toLowerCase()}-scale</b>, ${r.method.toLowerCase()} project in a `
+     +  `<b>${r.country.toLowerCase()}</b> country, the model estimates <b>~${r.jobs.toLocaleString()} jobs</b> created `
+     +  `(${r.base} base × ${r.cf} country × ${r.mf} methodology) — jobs aren't entered, they're derived, just as in the research. `;
+  if(r.SDGA===0) txt+=`No SDGs are claimed yet, so the multiplier collapses the score to zero — claiming the goals the project genuinely supports is what lifts it. `;
+  else txt+=`It claims <b>${r.SDGA} SDG${r.SDGA>1?"s":""}</b> (${sdgList.slice(0,5).join(", ")}${sdgList.length>5?"…":""})`
+     +  (r.SDGA>1?`, which triggers the ×1.5 breadth multiplier for projects spanning multiple goals. `:` — a single goal, so no breadth multiplier yet. `);
+  txt+= `The score multiplies four factors — SDG alignment, jobs intensity, breadth multiplier and emission scale — so its biggest lever here is `
+     +  (r.CI<0.25?`<b>jobs intensity</b> (only ${(r.CI*100).toFixed(0)}% of the dataset maximum): a larger scale or more labour-intensive methodology would raise it most. `
+                  :`its <b>${r.SDGA} claimed goals combined with ~${r.jobs.toLocaleString()} jobs</b>. `);
+  txt+= `<span class="text-mist">This is the actual research formula, computed live — every factor is shown above, nothing is hidden in a black box.</span>`;
   document.getElementById("aiExplain").innerHTML=txt;
 }
 
@@ -178,10 +181,18 @@ function suggestFromDesc(){
 
 // ---- inputs ----
 const devEl=document.getElementById("dev"), sclEl=document.getElementById("scl"),
-      erEl=document.getElementById("er"), jobsEl=document.getElementById("jobs"), descEl=document.getElementById("desc");
-const erVal=document.getElementById("erVal"), jobVal=document.getElementById("jobVal");
-function recompute(){ erVal.textContent=(+erEl.value).toLocaleString()+" tCO₂e"; jobVal.textContent=(+jobsEl.value).toLocaleString(); render(); }
-[devEl,sclEl,erEl,jobsEl].forEach(el=>el.addEventListener("input",recompute));
+      methodEl=document.getElementById("methodSel"), erEl=document.getElementById("er"),
+      descEl=document.getElementById("desc");
+const erVal=document.getElementById("erVal"), jobVal=document.getElementById("jobVal"),
+      jobCalc=document.getElementById("jobCalc");
+function recompute(){
+  erVal.textContent=(+erEl.value).toLocaleString()+" tCO₂e";
+  const base=JOB_BASE[sclEl.value], cf=COUNTRY_FACTOR[devEl.value], mf=METHOD_FACTOR[methodEl.value];
+  jobVal.textContent=Math.round(base*cf*mf).toLocaleString();
+  jobCalc.textContent=`${base} base × ${cf} (${devEl.options[devEl.selectedIndex].text}) × ${mf} (${methodEl.value})`;
+  render();
+}
+[devEl,sclEl,methodEl,erEl].forEach(el=>el.addEventListener("input",recompute));
 descEl.addEventListener("change",suggestFromDesc);
 
 // ---- static content ----

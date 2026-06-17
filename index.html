@@ -167,18 +167,29 @@ tailwind.config = { theme: { extend: {
       <div class="grid grid-cols-2 gap-3 mt-4">
         <div><label class="text-sm text-mist">Host country</label>
           <select id="dev" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm outline-none focus:border-leaf">
-            <option value="3">Under-developed</option><option value="2" selected>Developing</option>
-            <option value="1">Developed</option><option value="0.5">Highly developed</option></select></div>
+            <option value="Under Developed">Under-developed</option><option value="Developing" selected>Developing</option>
+            <option value="Developed">Developed</option><option value="High Developed">Highly developed</option></select></div>
         <div><label class="text-sm text-mist">Project scale</label>
           <select id="scl" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm outline-none focus:border-leaf">
-            <option value="1">Micro</option><option value="2">Small</option>
-            <option value="3" selected>Medium</option><option value="4">Large</option></select></div>
+            <option value="Micro Scale">Micro</option><option value="Small Scale">Small</option>
+            <option value="Medium Scale" selected>Medium</option><option value="Large Scale">Large</option></select></div>
       </div>
+
+      <div class="mt-4"><label class="text-sm text-mist">Project methodology</label>
+        <select id="methodSel" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm outline-none focus:border-leaf">
+          <option>Renewables</option><option>Energy efficiency</option><option selected>Community-based</option>
+          <option>Re/afforestation</option><option>REDD+</option><option>IFM</option><option>HIR</option>
+          <option>Landfill gas capture</option><option>Savanna burning</option><option>Avoided deforestation</option></select></div>
 
       <div class="mt-4"><label class="text-sm text-mist flex justify-between"><span>Annual emission reduction</span><span id="erVal" class="text-leaf font-semibold">120,000 tCO₂e</span></label>
         <input id="er" type="range" min="1000" max="2000000" step="1000" value="120000" class="w-full mt-2"></div>
-      <div class="mt-4"><label class="text-sm text-mist flex justify-between"><span>Estimated jobs created</span><span id="jobVal" class="text-leaf font-semibold">350</span></label>
-        <input id="jobs" type="range" min="0" max="3000" step="10" value="350" class="w-full mt-2"></div>
+
+      <div class="mt-4 rounded-xl border border-leaf/30 bg-leaf/5 p-3">
+        <div class="text-xs text-mist">Estimated jobs created <span class="text-[10px]">(derived, not entered)</span></div>
+        <div class="flex items-baseline gap-2"><span id="jobVal" class="display text-2xl font-bold text-leaf">—</span>
+          <span class="text-xs text-mist">jobs</span></div>
+        <div id="jobCalc" class="text-[11px] text-mist/80 mt-0.5"></div>
+      </div>
 
       <label class="text-sm text-mist block mt-5">Claimed UN SDGs <span class="text-xs">(tap to toggle)</span></label>
       <div id="sdgChips" class="flex flex-wrap gap-1.5 mt-2"></div>
