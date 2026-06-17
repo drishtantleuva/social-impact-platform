@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Beyond the Tonne — Social Impact for Carbon Credits</title>
+<meta name="description" content="A research platform that quantifies the social impact of carbon-credit projects — combining project characteristics, UN SDG indicators and AI. By Drishtant Leuva (UTS, Springer 2025)." />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { display: ['Sora','sans-serif'], body: ['Inter','sans-serif'] },
+  colors: { ink:'#07120e', leaf:'#34d399', teal:'#2dd4bf', gold:'#fbbf24', mist:'#9fb8ad' }
+}}}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { background:#07120e; color:#e9f3ee; font-family:'Inter',sans-serif; overflow-x:hidden; }
+  .display { font-family:'Sora',sans-serif; }
+  .aurora { position:fixed; inset:-30% -10% auto -10%; height:80vh; z-index:0; filter:blur(70px); opacity:.5;
+    background: radial-gradient(40% 50% at 25% 30%, rgba(52,211,153,.35), transparent 70%),
+                radial-gradient(38% 45% at 75% 25%, rgba(45,212,191,.28), transparent 70%),
+                radial-gradient(45% 50% at 55% 80%, rgba(251,191,36,.16), transparent 70%);
+    animation: drift 16s ease-in-out infinite alternate; pointer-events:none; }
+  @keyframes drift { from{transform:translate3d(-2%,-1%,0) scale(1)} to{transform:translate3d(2%,2%,0) scale(1.08)} }
+  .glass { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); backdrop-filter:blur(14px);
+    border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.25); }
+  .grad-text { background:linear-gradient(96deg,#e9f3ee 10%,#34d399 55%,#2dd4bf); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .reveal { opacity:0; transform:translateY(34px); transition:opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1); }
+  .reveal.in { opacity:1; transform:none; }
+  .chip { transition:all .18s; cursor:pointer; user-select:none; }
+  .chip.on { transform:translateY(-1px); }
+  .pillbtn { background:linear-gradient(96deg,#34d399,#2dd4bf); color:#06231a; font-weight:600; }
+  .pillbtn:hover { filter:brightness(1.08); transform:translateY(-2px); }
+  input[type=range]{ -webkit-appearance:none; height:6px; border-radius:999px; background:rgba(255,255,255,.12); }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:#34d399; cursor:pointer; box-shadow:0 0 0 4px rgba(52,211,153,.2); }
+  .eyebrow { letter-spacing:.22em; text-transform:uppercase; font-size:.72rem; color:#34d399; font-weight:600; }
+  .navlink { color:#9fb8ad; font-size:.85rem; } .navlink:hover{ color:#e9f3ee; }
+  ::-webkit-scrollbar{ width:10px } ::-webkit-scrollbar-thumb{ background:#1d3a2e; border-radius:999px }
+</style>
+</head>
+<body class="font-body">
+<div class="aurora"></div>
+
+<!-- NAV -->
+<nav class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-ink/60 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+    <a href="#top" class="display font-bold tracking-tight text-leaf">Beyond&nbsp;the&nbsp;Tonne</a>
+    <div class="hidden md:flex gap-7 items-center">
+      <a href="#why" class="navlink">Why it matters</a>
+      <a href="#method" class="navlink">Method</a>
+      <a href="#demo" class="navlink">Live demo</a>
+      <a href="#stakeholders" class="navlink">Who cares</a>
+      <a href="https://drishtantleuva.github.io" class="navlink border border-white/20 rounded-full px-4 py-1.5">Portfolio</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="top" class="relative z-10 min-h-screen flex items-center px-5">
+  <div class="max-w-5xl mx-auto text-center pt-20">
+    <p class="eyebrow reveal">UTS Master's Research · Springer 2025 · Drishtant Leuva</p>
+    <h1 class="display font-extrabold leading-[1.03] tracking-tight mt-5 reveal"
+        style="font-size:clamp(2.6rem,7vw,5.2rem)">
+      Carbon credits are measured<br/>in tonnes. <span class="grad-text">But who<br/>measures the people?</span>
+    </h1>
+    <p class="text-mist text-lg md:text-xl max-w-2xl mx-auto mt-7 reveal">
+      A tonne of CO₂ avoided says nothing about the community that hosted the project —
+      the jobs created, the clean water delivered, the girls put through school. This platform
+      quantifies that missing half: the <span class="text-leaf font-semibold">social impact</span> of
+      carbon-credit projects, combining project data, UN&nbsp;SDG indicators and AI.
+    </p>
+    <div class="mt-9 flex gap-4 justify-center flex-wrap reveal">
+      <a href="#demo" class="pillbtn rounded-full px-7 py-3.5">Try the live demo</a>
+      <a href="#why" class="rounded-full px-7 py-3.5 border border-white/20 hover:bg-white/5 transition">Why this matters</a>
+    </div>
+    <div class="mt-16 grid grid-cols-3 gap-4 max-w-2xl mx-auto reveal">
+      <div class="glass p-4"><div class="display text-3xl font-bold grad-text">161</div><div class="text-xs text-mist mt-1">real projects analysed</div></div>
+      <div class="glass p-4"><div class="display text-3xl font-bold grad-text">17</div><div class="text-xs text-mist mt-1">UN SDGs scored</div></div>
+      <div class="glass p-4"><div class="display text-3xl font-bold grad-text">1st</div><div class="text-xs text-mist mt-1">to quantify it this way</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- THE BLIND SPOT -->
+<section class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="reveal max-w-3xl">
+    <p class="eyebrow">The blind spot</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3 leading-tight">The market optimises for carbon.<br/>Communities are an afterthought.</h2>
+    <p class="text-mist text-lg mt-5">Two projects can avoid the exact same tonnes of CO₂ — and one transforms a region
+      with jobs, clean cookstoves and schooling while the other does almost nothing for the people living there.
+      Today's carbon price can't tell them apart. That gap distorts where billions of dollars flow.</p>
+  </div>
+  <div class="grid md:grid-cols-2 gap-5 mt-12">
+    <div class="glass p-7 reveal">
+      <div class="text-mist text-sm font-semibold">TRADITIONAL VIEW</div>
+      <div class="display text-2xl font-bold mt-2">Carbon-only</div>
+      <ul class="mt-4 space-y-2 text-mist text-sm">
+        <li>• One number: tonnes of CO₂e avoided</li>
+        <li>• Blind to jobs, health, education, equity</li>
+        <li>• Rewards cheap tonnes over real development</li>
+        <li>• Community benefit is a marketing claim, unmeasured</li>
+      </ul>
+    </div>
+    <div class="glass p-7 reveal" style="border-color:rgba(52,211,153,.4)">
+      <div class="text-leaf text-sm font-semibold">THIS RESEARCH</div>
+      <div class="display text-2xl font-bold mt-2 grad-text">Carbon + Social Impact</div>
+      <ul class="mt-4 space-y-2 text-[#cfe7dd] text-sm">
+        <li>• A measured social-impact index alongside carbon</li>
+        <li>• Grounded in the 17 UN Sustainable Development Goals</li>
+        <li>• Explainable: you see <em>what</em> drives the score</li>
+        <li>• AI audits whether SDG claims hold up</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- WHY IT MATTERS / SDG BENEFITS -->
+<section id="why" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="reveal text-center max-w-2xl mx-auto">
+    <p class="eyebrow">What social impact looks like</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3">One project, many lives touched</h2>
+    <p class="text-mist text-lg mt-4">Behind a good carbon project sit concrete human outcomes — each one mapping to a UN Sustainable Development Goal.</p>
+  </div>
+  <div id="benefitGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-12"></div>
+</section>
+
+<!-- METHOD / INNOVATION -->
+<section id="method" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="reveal max-w-3xl">
+    <p class="eyebrow">The innovation</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3">Three signals, one impact picture</h2>
+    <p class="text-mist text-lg mt-5">The novelty isn't another carbon model — it's fusing three very different signals into a single,
+      explainable measure of social impact, then letting AI interrogate the project's own claims.</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-5 mt-12">
+    <div class="glass p-7 reveal"><div class="display text-gold text-3xl font-bold">01</div>
+      <div class="display text-xl font-semibold mt-2">Project characteristics</div>
+      <p class="text-mist text-sm mt-2">Scale, host-country development level, annual emission reduction, estimated jobs and methodology — the measurable footprint.</p></div>
+    <div class="glass p-7 reveal"><div class="display text-gold text-3xl font-bold">02</div>
+      <div class="display text-xl font-semibold mt-2">UN SDG indicators</div>
+      <p class="text-mist text-sm mt-2">The 17 Sustainable Development Goals turn vague "co-benefits" into a structured, comparable fingerprint of social value.</p></div>
+    <div class="glass p-7 reveal"><div class="display text-gold text-3xl font-bold">03</div>
+      <div class="display text-xl font-semibold mt-2">AI-based analysis</div>
+      <p class="text-mist text-sm mt-2">A gradient-boosted model learns the impact pattern; a GPT-4 prompt ladder reads the project narrative and audits its SDG claims with reasoning.</p></div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo" class="relative z-10 max-w-6xl mx-auto px-5 py-20">
+  <div class="reveal text-center max-w-2xl mx-auto">
+    <p class="eyebrow">Live demonstration</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3">Score a project's social impact</h2>
+    <p class="text-mist text-lg mt-4">Describe a carbon project and watch its social-impact profile build in real time. Weights are learned from the real research dataset.</p>
+  </div>
+
+  <div class="grid lg:grid-cols-5 gap-6 mt-12">
+    <!-- INPUTS -->
+    <div class="glass p-6 lg:col-span-2 reveal">
+      <label class="text-sm text-mist">Project description</label>
+      <textarea id="desc" rows="3" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-leaf"
+        placeholder="e.g. A cookstove programme distributing clean stoves to rural households, cutting fuelwood use and indoor smoke…">Improved cookstoves for 40,000 rural households, cutting fuelwood demand and indoor air pollution while creating local manufacturing and distribution jobs.</textarea>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div><label class="text-sm text-mist">Host country</label>
+          <select id="dev" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm outline-none focus:border-leaf">
+            <option value="3">Under-developed</option><option value="2" selected>Developing</option>
+            <option value="1">Developed</option><option value="0.5">Highly developed</option></select></div>
+        <div><label class="text-sm text-mist">Project scale</label>
+          <select id="scl" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl p-2.5 text-sm outline-none focus:border-leaf">
+            <option value="1">Micro</option><option value="2">Small</option>
+            <option value="3" selected>Medium</option><option value="4">Large</option></select></div>
+      </div>
+
+      <div class="mt-4"><label class="text-sm text-mist flex justify-between"><span>Annual emission reduction</span><span id="erVal" class="text-leaf font-semibold">120,000 tCO₂e</span></label>
+        <input id="er" type="range" min="1000" max="2000000" step="1000" value="120000" class="w-full mt-2"></div>
+      <div class="mt-4"><label class="text-sm text-mist flex justify-between"><span>Estimated jobs created</span><span id="jobVal" class="text-leaf font-semibold">350</span></label>
+        <input id="jobs" type="range" min="0" max="3000" step="10" value="350" class="w-full mt-2"></div>
+
+      <label class="text-sm text-mist block mt-5">Claimed UN SDGs <span class="text-xs">(tap to toggle)</span></label>
+      <div id="sdgChips" class="flex flex-wrap gap-1.5 mt-2"></div>
+    </div>
+
+    <!-- RESULTS DASHBOARD -->
+    <div class="lg:col-span-3 grid sm:grid-cols-2 gap-6">
+      <div class="glass p-5 reveal flex flex-col items-center justify-center">
+        <div class="text-sm text-mist">Social Impact Score</div>
+        <div id="gauge" style="width:100%;height:170px"></div>
+        <div id="verdict" class="text-sm font-semibold -mt-2"></div>
+      </div>
+      <div class="glass p-5 reveal">
+        <div class="text-sm text-mist mb-1">Impact dimensions</div>
+        <div id="radar" style="width:100%;height:210px"></div>
+      </div>
+      <div class="glass p-5 reveal">
+        <div class="text-sm text-mist mb-1">SDG contribution wheel</div>
+        <div id="wheel" style="width:100%;height:230px"></div>
+      </div>
+      <div class="glass p-5 reveal">
+        <div class="text-sm text-mist mb-1">Why this score</div>
+        <div id="why-bars" style="width:100%;height:230px"></div>
+      </div>
+      <div class="glass p-5 reveal">
+        <div class="text-sm text-mist mb-1">vs. a typical project</div>
+        <div id="baseline" style="width:100%;height:150px"></div>
+        <div class="flex items-center justify-between mt-3 text-sm">
+          <span class="text-mist">Model confidence</span><span id="conf" class="font-semibold"></span>
+        </div>
+        <div class="h-1.5 rounded-full bg-white/10 mt-1.5 overflow-hidden"><div id="confBar" class="h-full rounded-full" style="background:linear-gradient(90deg,#fbbf24,#34d399)"></div></div>
+      </div>
+      <div class="glass p-5 reveal">
+        <div class="text-sm text-mist mb-1">5-year community benefit (projected)</div>
+        <div id="future" style="width:100%;height:185px"></div>
+      </div>
+      <div class="glass p-5 reveal sm:col-span-2" style="border-color:rgba(52,211,153,.3)">
+        <div class="text-leaf text-sm font-semibold flex items-center gap-2">✦ AI explanation</div>
+        <p id="aiExplain" class="text-[#cfe7dd] text-sm mt-2 leading-relaxed"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SDG AUDITOR -->
+<section class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="reveal max-w-3xl">
+    <p class="eyebrow">The AI auditor</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3">Does the project's SDG claim hold up?</h2>
+    <p class="text-mist text-lg mt-5">The research tested a ladder of prompting strategies to make GPT-4 map a project description to the
+      SDGs it genuinely supports — and <em>reason</em> about why. Below are the actual model outputs, on the
+      <span class="text-leaf">Rimba Raya Biodiversity Reserve</span> (Indonesia).</p>
+  </div>
+  <div id="ladder" class="grid md:grid-cols-2 gap-4 mt-10"></div>
+</section>
+
+<!-- STAKEHOLDERS -->
+<section id="stakeholders" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="reveal text-center max-w-2xl mx-auto">
+    <p class="eyebrow">Why this matters</p>
+    <h2 class="display text-4xl md:text-5xl font-bold mt-3">Four rooms where this changes decisions</h2>
+  </div>
+  <div id="stakeGrid" class="grid sm:grid-cols-2 gap-5 mt-12"></div>
+</section>
+
+<!-- TAKEAWAYS -->
+<section class="relative z-10 max-w-4xl mx-auto px-5 py-24 text-center">
+  <div class="reveal">
+    <p class="eyebrow">The takeaway</p>
+    <h2 class="display text-3xl md:text-5xl font-bold mt-3 leading-tight">A tonne of carbon is the same everywhere.<br/><span class="grad-text">Its impact on people is not.</span></h2>
+    <p class="text-mist text-lg mt-6 max-w-2xl mx-auto">Measuring social impact turns "trust us, it helps the community" into something you can score,
+      compare, explain and fund. That's the contribution of this research — and the start of carbon markets that reward development, not just dilution.</p>
+    <div class="mt-9 flex gap-4 justify-center flex-wrap">
+      <a href="#demo" class="pillbtn rounded-full px-7 py-3.5">Score a project</a>
+      <a href="https://github.com/drishtantleuva/social-impact-platform" class="rounded-full px-7 py-3.5 border border-white/20 hover:bg-white/5 transition">View the code</a>
+    </div>
+  </div>
+</section>
+
+<footer class="relative z-10 border-t border-white/5 py-8 text-center text-mist text-sm">
+  Built by <a href="https://drishtantleuva.github.io" class="text-leaf">Drishtant Leuva</a> — from my UTS Master of Analytics (Research) &amp; Springer book chapter on UN&nbsp;SDG verification in carbon-credit projects ·
+  <a href="https://www.linkedin.com/in/drishtant-leuva/" class="text-leaf">LinkedIn</a>
+  <div class="mt-2 text-xs text-mist/70 max-w-2xl mx-auto">Research prototype. The social-impact index is a constructed composite (from SDG alignment, emission reduction and proxy variables); scores are illustrative, not financial advice.</div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
