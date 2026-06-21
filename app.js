@@ -5,13 +5,18 @@
    employment, which the model estimates from the project's profile — it is not
    entered by the user, exactly as in the research. */
 
-// Community Impact (employment) is estimated by a trained Random Forest, transpiled
-// to JS (employment_model.js → predictEmployment). The ML estimates this component;
-// the formula below aggregates it — the model never predicts the final score.
-const SCALES=["Micro Scale","Small Scale","Medium Scale","Large Scale"];
-const COUNTRIES=["Under Developed","Developing","Developed","High Developed"];
-const METHODS=["Renewables","Energy efficiency","Community-based","Re/afforestation","REDD+","IFM","HIR","Landfill gas capture","Savanna burning","Avoided deforestation"];
+// Community Impact (employment) is estimated by a fitted model — a power-law in
+// annual emission reduction with methodology and host-country factors, fit on the
+// real project data. Employment grows CONTINUOUSLY with project size (no step
+// jumps), then feeds the formula. The model estimates this component; it never
+// predicts the final score.
 const JOBS_MAX=1547;
+const EMP_C=0.12368, EMP_B=0.712;
+const EMP_METHOD={"Renewables":0.354,"Energy efficiency":0.185,"Community-based":0.307,"Re/afforestation":0.199,"REDD+":0.173,"IFM":1.029,"HIR":1.017,"Landfill gas capture":2.034,"Savanna burning":0.616,"Avoided deforestation":4.085};
+const EMP_COUNTRY={"Under Developed":1.444,"Developing":1.254,"Developed":0.937,"High Developed":0.365};
+function estimateEmployment(scale,country,method,er){
+  return Math.max(0,Math.round(EMP_C*Math.pow(Math.max(er,1),EMP_B)*(EMP_METHOD[method]||1)*(EMP_COUNTRY[country]||1)));
+}
 // Project scale is DERIVED from annual emission reduction, with country-adjusted
 // thresholds (data: under-developed countries run smaller projects, so a given
 // emission reduction implies a larger relative scale there). Boundaries from the
@@ -32,14 +37,6 @@ function interp(x,xs,ys){
   if(x<=xs[0])return ys[0]; if(x>=xs[xs.length-1])return ys[ys.length-1];
   for(let i=1;i<xs.length;i++){ if(x<=xs[i]){const t=(x-xs[i-1])/(xs[i]-xs[i-1]);return ys[i-1]+t*(ys[i]-ys[i-1]);}}
   return ys[ys.length-1];
-}
-function estimateEmployment(scale,country,method,er){
-  const v=[];
-  SCALES.forEach(s=>v.push(scale===s?1:0));
-  COUNTRIES.forEach(c=>v.push(country===c?1:0));
-  METHODS.forEach(m=>v.push(method===m?1:0));
-  v.push(Math.log1p(er));
-  return Math.max(0,Math.round(predictEmployment(v)));
 }
 
 const PINE="#0e7c66", CLAY="#b65c3a", INK="#16211c", MUTED="#5f6b63", GRID="rgba(22,33,28,.10)";

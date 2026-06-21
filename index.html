@@ -146,7 +146,7 @@
     </p>
     <div class="grid sm:grid-cols-4 gap-px bg-line mt-6 rounded-md overflow-hidden text-sm">
       <div class="bg-paper p-5"><p class="serif text-base">Gen-AI auditor → <span style="color:#0e7c66">SDGA</span></p><p class="text-muted mt-1.5">reads the project description and detects which SDGs it genuinely supports.</p></div>
-      <div class="bg-paper p-5"><p class="serif text-base">Random Forest → <span style="color:#0e7c66">CI</span></p><p class="text-muted mt-1.5">predicts the employment a project will create (CV R² 0.97) — its community impact.</p></div>
+      <div class="bg-paper p-5"><p class="serif text-base">Fitted model → <span style="color:#0e7c66">CI</span></p><p class="text-muted mt-1.5">predicts the employment a project creates, scaling continuously with its size — its community impact.</p></div>
       <div class="bg-paper p-5"><p class="serif text-base">Emissions → <span style="color:#0e7c66">DCR</span>, breadth → <span style="color:#0e7c66">ME</span></p><p class="text-muted mt-1.5">the development contribution and multiplier follow directly from the project.</p></div>
       <div class="bg-paper p-5" style="background:#0e7c66;color:#f6f3ec"><p class="serif text-base">Formula → Social Impact</p><p class="mt-1.5" style="color:#dff0ea">combines the learned components into one transparent, auditable score.</p></div>
     </div>
@@ -236,8 +236,8 @@
       <div class="mt-4"><label class="text-sm text-muted flex justify-between"><span>Annual emission reduction</span><span id="erVal" class="text-pine font-semibold">120,000 tCO₂e</span></label>
         <input id="er" type="range" min="1000" max="2000000" step="1000" value="120000" class="w-full mt-2"></div>
       <div class="mt-4 rounded-md border border-pine/30 bg-pine/5 p-3">
-        <div class="text-xs text-muted">Estimated employment created — <span class="text-ink">Random Forest model</span></div>
-        <div class="flex items-baseline gap-2"><span id="jobVal" class="serif text-3xl font-semibold text-pine">—</span><span class="text-xs text-muted">jobs · predicted from the project profile (CV R² 0.97)</span></div>
+        <div class="text-xs text-muted">Estimated employment created — <span class="text-ink">fitted model</span></div>
+        <div class="flex items-baseline gap-2"><span id="jobVal" class="serif text-3xl font-semibold text-pine">—</span><span class="text-xs text-muted">jobs · grows continuously with project size</span></div>
       </div>
       <label class="text-sm text-muted block mt-5">Claimed UN SDGs <span class="text-xs">(tap to toggle)</span></label>
       <div id="sdgChips" class="flex flex-wrap gap-1.5 mt-2"></div>
@@ -305,7 +305,6 @@
   <p class="text-xs text-muted/70 max-w-2xl mx-auto mt-2">A research prototype. The social-impact score is a composite measure defined in the thesis; figures are illustrative of the methodology, not financial advice.</p>
 </footer>
 
-<script src="employment_model.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
