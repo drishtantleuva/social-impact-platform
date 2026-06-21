@@ -11,7 +11,17 @@
 const SCALES=["Micro Scale","Small Scale","Medium Scale","Large Scale"];
 const COUNTRIES=["Under Developed","Developing","Developed","High Developed"];
 const METHODS=["Renewables","Energy efficiency","Community-based","Re/afforestation","REDD+","IFM","HIR","Landfill gas capture","Savanna burning","Avoided deforestation"];
-const JOBS_MAX=1547, SI_SCALE=Math.log1p(12);
+const JOBS_MAX=1547;
+// the raw Social-Impact index is heavily right-skewed (median ≈ 0.03), so the 0–100
+// score is calibrated to the empirical distribution of the 161 studied projects:
+// it is a PERCENTILE — how a project compares with the real population (≈50 = typical).
+const IMPACT_X=[0,0.0162,0.0233,0.0271,0.0323,0.0324,0.0325,0.0326,0.1629,0.3846,0.6593,0.9231,0.9232,2.7692,4.533,19.0385];
+const PCTL_Y=[4.3,14.6,20.5,27,33.2,39.4,45,51.2,57.5,63.7,69.3,75.5,81.7,88.5,94.1,100];
+function interp(x,xs,ys){
+  if(x<=xs[0])return ys[0]; if(x>=xs[xs.length-1])return ys[ys.length-1];
+  for(let i=1;i<xs.length;i++){ if(x<=xs[i]){const t=(x-xs[i-1])/(xs[i]-xs[i-1]);return ys[i-1]+t*(ys[i]-ys[i-1]);}}
+  return ys[ys.length-1];
+}
 function estimateEmployment(scale,country,method,er){
   const v=[];
   SCALES.forEach(s=>v.push(scale===s?1:0));
@@ -55,7 +65,7 @@ function compute(){
   const jobs=estimateEmployment(scale,country,method,er);   // ML-estimated Community Impact
   const SDGA=selected.size, CI=jobs/JOBS_MAX, ME=SDGA>1?1.5:(SDGA===1?1:0), DCR=1-1/Math.max(er,1.0001);
   const impact=Math.max(0,DCR*SDGA*CI*ME);
-  const score=Math.min(100,Math.round(100*Math.log1p(impact)/SI_SCALE));
+  const score=Math.round(interp(impact,IMPACT_X,PCTL_Y));   // percentile vs the studied projects
   return {impact,score,jobs,SDGA,CI,ME,DCR,scale,country,method,er};
 }
 
@@ -122,7 +132,7 @@ function render(){
 function explain(r){
   const band=r.score>=66?"a high":r.score>=40?"a moderate":"a limited";
   const sdgList=[...selected].sort((a,b)=>a-b).map(n=>SDG_NAME[n]);
-  let t=`This ${r.scale.replace(" Scale","").toLowerCase()}-scale, ${r.method.toLowerCase()} project in a ${r.country.toLowerCase()} country scores <b>${r.score}/100</b> — ${band} social-impact profile. `;
+  let t=`This ${r.scale.replace(" Scale","").toLowerCase()}-scale, ${r.method.toLowerCase()} project in a ${r.country.toLowerCase()} country scores <b>${r.score}/100</b> — ${band} social-impact profile, ranking above roughly <b>${r.score}%</b> of the projects in the study. `;
   t+=`Its <b>community impact</b> rests on an estimated <b>${r.jobs.toLocaleString()} jobs</b> of employment — predicted by a Random Forest model from the project's profile, then fed into the formula (the model estimates this component; it never sets the score directly). `;
   if(r.SDGA===0) t+=`No SDGs are claimed, so the multiplier collapses the score to zero; recording the goals the project genuinely advances is what lifts it. `;
   else t+=`It advances <b>${r.SDGA} of the 17 SDGs</b> (${sdgList.slice(0,5).join(", ")}${sdgList.length>5?"…":""})`+(r.SDGA>1?`, broad enough to trigger the multiplier effect for projects that reach several goals at once. `:`, a single goal, so no multiplier yet. `);
