@@ -238,6 +238,19 @@
       <div class="mt-4 rounded-md border border-pine/30 bg-pine/5 p-3">
         <div class="text-xs text-muted">Estimated employment created — <span class="text-ink">fitted model</span></div>
         <div class="flex items-baseline gap-2"><span id="jobVal" class="serif text-3xl font-semibold text-pine">—</span><span class="text-xs text-muted">jobs · grows continuously with project size</span></div>
+        <details class="mt-2 text-xs">
+          <summary class="cursor-pointer text-pine font-medium">How is this estimated?</summary>
+          <div class="text-muted mt-2 leading-relaxed space-y-2">
+            <p>A <span class="text-ink">power-law regression</span> fit on the 161 real projects — employment as a function of project size:</p>
+            <p class="serif text-ink text-sm bg-paper border border-line rounded p-2 text-center">employment ≈ (annual emission reduction)<sup>0.71</sup> × methodology × host-country</p>
+            <ul class="space-y-1.5 list-disc pl-4">
+              <li><span class="text-ink">Project size</span> (emission reduction) is the main driver. The exponent below 1 means jobs grow with size but with <span class="text-ink">diminishing returns</span> — and smoothly, so there are no jumps.</li>
+              <li><span class="text-ink">Methodology factor:</span> labour-intensive methods (afforestation, community-based) create more jobs per project than capital-intensive ones (renewables, energy efficiency).</li>
+              <li><span class="text-ink">Host-country factor:</span> less-developed economies rely more on manual labour, so more jobs per project.</li>
+            </ul>
+            <p>This estimates the <span class="text-ink">Community Impact</span> component only; the formula then combines it with the others — the model never sets the final score.</p>
+          </div>
+        </details>
       </div>
       <label class="text-sm text-muted block mt-5">Claimed UN SDGs <span class="text-xs">(tap to toggle)</span></label>
       <div id="sdgChips" class="flex flex-wrap gap-1.5 mt-2"></div>
