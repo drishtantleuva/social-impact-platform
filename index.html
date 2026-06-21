@@ -46,6 +46,7 @@ tailwind.config={theme:{extend:{
     <div class="hidden md:flex gap-7 items-center text-sm text-muted">
       <a href="#problem" class="hover:text-ink">The gap</a>
       <a href="#framework" class="hover:text-ink">Framework</a>
+      <a href="#stats" class="hover:text-ink">Validation</a>
       <a href="#demo" class="hover:text-ink">Live model</a>
       <a href="#auditor" class="hover:text-ink">Gen-AI auditor</a>
       <a href="https://drishtantleuva.github.io" class="btn-out rounded-full px-4 py-1.5">Portfolio</a>
@@ -141,12 +142,60 @@ tailwind.config={theme:{extend:{
     <div class="card p-6 reveal"><p class="secnum">CI</p><p class="serif text-lg mt-1">Community Impact</p><p class="text-sm text-muted mt-2">The human dividend — employment created and households reached — the depth of benefit on the ground.</p></div>
     <div class="card p-6 reveal"><p class="secnum">ME</p><p class="serif text-lg mt-1">Multiplier Effect</p><p class="text-sm text-muted mt-2">The cascading reach of a project that advances several goals at once, rather than a single isolated outcome.</p></div>
   </div>
+
+  <div class="card mt-6 p-7 reveal" style="border-color:#0e7c6655">
+    <p class="kicker" style="color:#0e7c66">How the model and the formula work together</p>
+    <h3 class="serif text-2xl font-semibold mt-2">Machine learning estimates the inputs. The formula produces the output.</h3>
+    <p class="text-muted mt-3 leading-relaxed max-w-3xl">
+      The two never compete on the same number — which is what keeps the method honest. Learning handles the parts
+      that are hard to observe; the transparent formula does the principled aggregation.
+    </p>
+    <div class="grid sm:grid-cols-4 gap-px bg-line mt-6 rounded-md overflow-hidden text-sm">
+      <div class="bg-paper p-5"><p class="serif text-base">Gen-AI auditor → <span style="color:#0e7c66">SDGA</span></p><p class="text-muted mt-1.5">reads the project description and detects which SDGs it genuinely supports.</p></div>
+      <div class="bg-paper p-5"><p class="serif text-base">Random Forest → <span style="color:#0e7c66">CI</span></p><p class="text-muted mt-1.5">predicts the employment a project will create (CV R² 0.97) — its community impact.</p></div>
+      <div class="bg-paper p-5"><p class="serif text-base">Emissions → <span style="color:#0e7c66">DCR</span>, breadth → <span style="color:#0e7c66">ME</span></p><p class="text-muted mt-1.5">the development contribution and multiplier follow directly from the project.</p></div>
+      <div class="bg-paper p-5" style="background:#0e7c66;color:#f6f3ec"><p class="serif text-base">Formula → Social Impact</p><p class="mt-1.5" style="color:#dff0ea">combines the learned components into one transparent, auditable score.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATISTICAL ANALYSIS -->
+<section id="stats" class="max-w-5xl mx-auto px-6 py-20 border-t border-line">
+  <div class="reveal max-w-3xl">
+    <p class="secnum">03 — Modelling &amp; validation</p>
+    <h2 class="serif text-3xl md:text-4xl font-semibold mt-2">What the statistics actually showed</h2>
+    <p class="text-lg text-muted mt-5 leading-relaxed">
+      Beyond defining the framework, the study built and validated statistical models to quantify and predict social
+      impact across the 161 projects — linear regression, random forests and gradient boosting, tuned by grid search
+      and tested with <span class="text-ink">10-fold cross-validation</span> (MSE primary, MAE for the skewed target).
+    </p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 mt-12">
+    <div class="card p-6 reveal">
+      <div class="kicker mb-1">Correlation with social impact</div>
+      <div id="corrChart" style="width:100%;height:210px"></div>
+      <p class="text-sm text-muted mt-2">Development Contribution is the strongest single predictor (r = 0.61), followed by Community Impact (0.48) and the Multiplier Effect (0.41) — the same three levers the live model exposes.</p>
+    </div>
+    <div class="card p-6 reveal">
+      <div class="kicker mb-1">Model comparison — cross-validated MSE (lower is better)</div>
+      <div id="modelChart" style="width:100%;height:210px"></div>
+      <p class="text-sm text-muted mt-2"><span class="text-ink serif italic">Random Forest won</span> (MSE 0.1587), capturing the non-linear interactions between components; the boosting methods lagged here, and regularised linear models were held back by multicollinearity.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-5 mt-6">
+    <div class="card p-5 reveal text-center"><p class="serif text-3xl" style="color:#0e7c66">0.1587</p><p class="text-xs text-muted mt-1">best model MSE (Random Forest)</p></div>
+    <div class="card p-5 reveal text-center"><p class="serif text-3xl" style="color:#0e7c66">10-fold</p><p class="text-xs text-muted mt-1">cross-validation</p></div>
+    <div class="card p-5 reveal text-center"><p class="serif text-3xl" style="color:#0e7c66">161</p><p class="text-xs text-muted mt-1">projects modelled</p></div>
+    <div class="card p-5 reveal text-center"><p class="serif text-3xl" style="color:#0e7c66">3</p><p class="text-xs text-muted mt-1">model families compared</p></div>
+  </div>
 </section>
 
 <!-- LIVE MODEL -->
 <section id="demo" class="max-w-5xl mx-auto px-6 py-20 border-t border-line">
   <div class="reveal max-w-3xl">
-    <p class="secnum">03 — The model, live</p>
+    <p class="secnum">04 — The model, live</p>
     <h2 class="serif text-3xl md:text-4xl font-semibold mt-2">Score a project's social impact</h2>
     <p class="text-lg text-muted mt-5 leading-relaxed">
       Describe a carbon project and the model — trained on the 161 real projects from the study — estimates its social
@@ -178,8 +227,8 @@ tailwind.config={theme:{extend:{
       <div class="mt-4"><label class="text-sm text-muted flex justify-between"><span>Annual emission reduction</span><span id="erVal" class="text-pine font-semibold">120,000 tCO₂e</span></label>
         <input id="er" type="range" min="1000" max="2000000" step="1000" value="120000" class="w-full mt-2"></div>
       <div class="mt-4 rounded-md border border-pine/30 bg-pine/5 p-3">
-        <div class="text-xs text-muted">Estimated employment created</div>
-        <div class="flex items-baseline gap-2"><span id="jobVal" class="serif text-3xl font-semibold text-pine">—</span><span class="text-xs text-muted">jobs · modelled from the project profile</span></div>
+        <div class="text-xs text-muted">Estimated employment created — <span class="text-ink">Random Forest model</span></div>
+        <div class="flex items-baseline gap-2"><span id="jobVal" class="serif text-3xl font-semibold text-pine">—</span><span class="text-xs text-muted">jobs · predicted from the project profile (CV R² 0.97)</span></div>
       </div>
       <label class="text-sm text-muted block mt-5">Claimed UN SDGs <span class="text-xs">(tap to toggle)</span></label>
       <div id="sdgChips" class="flex flex-wrap gap-1.5 mt-2"></div>
@@ -210,7 +259,7 @@ tailwind.config={theme:{extend:{
 <!-- GEN-AI AUDITOR -->
 <section id="auditor" class="max-w-5xl mx-auto px-6 py-20 border-t border-line">
   <div class="reveal max-w-3xl">
-    <p class="secnum">04 — The Gen-AI auditor</p>
+    <p class="secnum">05 — The Gen-AI auditor</p>
     <h2 class="serif text-3xl md:text-4xl font-semibold mt-2">Do the SDG claims hold up?</h2>
     <p class="text-lg text-muted mt-5 leading-relaxed">
       A score is only as honest as the claims behind it. The third objective built a Gen-AI auditor — an LLM guided by
@@ -224,7 +273,7 @@ tailwind.config={theme:{extend:{
 
 <!-- STAKEHOLDERS -->
 <section class="max-w-5xl mx-auto px-6 py-20 border-t border-line">
-  <div class="reveal max-w-3xl"><p class="secnum">05 — Why it matters</p>
+  <div class="reveal max-w-3xl"><p class="secnum">06 — Why it matters</p>
     <h2 class="serif text-3xl md:text-4xl font-semibold mt-2">Four decisions this changes</h2></div>
   <div id="stakeGrid" class="grid sm:grid-cols-2 gap-px bg-line mt-10 rounded-md overflow-hidden"></div>
 </section>
@@ -232,7 +281,7 @@ tailwind.config={theme:{extend:{
 <!-- TAKEAWAY -->
 <section class="max-w-4xl mx-auto px-6 py-24 text-center border-t border-line">
   <div class="reveal">
-    <p class="secnum">06 — In one line</p>
+    <p class="secnum">07 — In one line</p>
     <h2 class="serif text-3xl md:text-5xl font-semibold mt-3 leading-tight">A tonne of carbon is the same everywhere.<br/>Its <span class="italic" style="color:#0e7c66">impact on people</span> is not.</h2>
     <p class="text-lg text-muted mt-6 max-w-2xl mx-auto leading-relaxed">Measuring social impact turns "trust us, it helps the community" into something you can score, compare, explain and verify — so carbon markets can reward development, not just dilution.</p>
     <div class="mt-8 flex gap-3 justify-center"><a href="#demo" class="btn-fill rounded-full px-6 py-3 text-sm">Run the model</a>
@@ -246,6 +295,7 @@ tailwind.config={theme:{extend:{
   <p class="text-xs text-muted/70 max-w-2xl mx-auto mt-2">A research prototype. The social-impact score is a composite measure defined in the thesis; figures are illustrative of the methodology, not financial advice.</p>
 </footer>
 
+<script src="employment_model.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

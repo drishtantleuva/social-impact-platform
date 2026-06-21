@@ -5,11 +5,21 @@
    employment, which the model estimates from the project's profile — it is not
    entered by the user, exactly as in the research. */
 
-const JOB_BASE={"Micro Scale":5,"Small Scale":30,"Medium Scale":125,"Large Scale":850};
-const COUNTRY_FACTOR={"Under Developed":1.7,"Developing":1.4,"Developed":1.0,"High Developed":0.7};
-const METHOD_FACTOR={"Renewables":1.2,"Energy efficiency":1.0,"Community-based":1.3,"Re/afforestation":1.4,
-  "REDD+":1.1,"IFM":1.1,"HIR":1.0,"Landfill gas capture":0.9,"Savanna burning":1.2,"Avoided deforestation":1.1};
+// Community Impact (employment) is estimated by a trained Random Forest, transpiled
+// to JS (employment_model.js → predictEmployment). The ML estimates this component;
+// the formula below aggregates it — the model never predicts the final score.
+const SCALES=["Micro Scale","Small Scale","Medium Scale","Large Scale"];
+const COUNTRIES=["Under Developed","Developing","Developed","High Developed"];
+const METHODS=["Renewables","Energy efficiency","Community-based","Re/afforestation","REDD+","IFM","HIR","Landfill gas capture","Savanna burning","Avoided deforestation"];
 const JOBS_MAX=1547, SI_SCALE=Math.log1p(12);
+function estimateEmployment(scale,country,method,er){
+  const v=[];
+  SCALES.forEach(s=>v.push(scale===s?1:0));
+  COUNTRIES.forEach(c=>v.push(country===c?1:0));
+  METHODS.forEach(m=>v.push(method===m?1:0));
+  v.push(Math.log1p(er));
+  return Math.max(0,Math.round(predictEmployment(v)));
+}
 
 const PINE="#0e7c66", CLAY="#b65c3a", INK="#16211c", MUTED="#5f6b63", GRID="rgba(22,33,28,.10)";
 
@@ -42,7 +52,7 @@ function paintChips(){[...chipWrap.children].forEach(c=>{const n=+c.dataset.n,co
 // scoring — the thesis formula
 function compute(){
   const scale=sclEl.value,country=devEl.value,method=methodEl.value,er=+erEl.value;
-  const jobs=Math.round(JOB_BASE[scale]*COUNTRY_FACTOR[country]*METHOD_FACTOR[method]);
+  const jobs=estimateEmployment(scale,country,method,er);   // ML-estimated Community Impact
   const SDGA=selected.size, CI=jobs/JOBS_MAX, ME=SDGA>1?1.5:(SDGA===1?1:0), DCR=1-1/Math.max(er,1.0001);
   const impact=Math.max(0,DCR*SDGA*CI*ME);
   const score=Math.min(100,Math.round(100*Math.log1p(impact)/SI_SCALE));
@@ -113,7 +123,7 @@ function explain(r){
   const band=r.score>=66?"a high":r.score>=40?"a moderate":"a limited";
   const sdgList=[...selected].sort((a,b)=>a-b).map(n=>SDG_NAME[n]);
   let t=`This ${r.scale.replace(" Scale","").toLowerCase()}-scale, ${r.method.toLowerCase()} project in a ${r.country.toLowerCase()} country scores <b>${r.score}/100</b> — ${band} social-impact profile. `;
-  t+=`Its <b>community impact</b> rests on an estimated <b>${r.jobs.toLocaleString()} jobs</b> of employment created — modelled from the project's profile rather than entered. `;
+  t+=`Its <b>community impact</b> rests on an estimated <b>${r.jobs.toLocaleString()} jobs</b> of employment — predicted by a Random Forest model from the project's profile, then fed into the formula (the model estimates this component; it never sets the score directly). `;
   if(r.SDGA===0) t+=`No SDGs are claimed, so the multiplier collapses the score to zero; recording the goals the project genuinely advances is what lifts it. `;
   else t+=`It advances <b>${r.SDGA} of the 17 SDGs</b> (${sdgList.slice(0,5).join(", ")}${sdgList.length>5?"…":""})`+(r.SDGA>1?`, broad enough to trigger the multiplier effect for projects that reach several goals at once. `:`, a single goal, so no multiplier yet. `);
   t+= r.CI<0.25 ? `Community impact is the clearest lever here — a larger scale or more labour-intensive methodology would raise the score most.`
@@ -129,7 +139,7 @@ const devEl=document.getElementById("dev"),sclEl=document.getElementById("scl"),
       erEl=document.getElementById("er"),descEl=document.getElementById("desc"),
       erVal=document.getElementById("erVal"),jobVal=document.getElementById("jobVal");
 function recompute(){erVal.textContent=(+erEl.value).toLocaleString()+" tCO₂e";
-  jobVal.textContent=Math.round(JOB_BASE[sclEl.value]*COUNTRY_FACTOR[devEl.value]*METHOD_FACTOR[methodEl.value]).toLocaleString();render();}
+  jobVal.textContent=estimateEmployment(sclEl.value,devEl.value,methodEl.value,+erEl.value).toLocaleString();render();}
 [devEl,sclEl,methodEl,erEl].forEach(e=>e.addEventListener("input",recompute));
 descEl.addEventListener("change",suggestFromDesc);
 
@@ -156,9 +166,25 @@ const sg=document.getElementById("stakeGrid");
 stake.forEach(([t,d])=>{const el=document.createElement("div");el.className="bg-paper p-7 reveal";
   el.innerHTML=`<p class="serif text-xl" style="color:#0e7c66">${t}</p><p class="text-muted text-[15px] mt-2 leading-relaxed">${d}</p>`;sg.appendChild(el);});
 
+// statistical analysis — static charts from the thesis (Table 4.4, Fig 4.2)
+const corr=echarts.init(document.getElementById("corrChart"));
+corr.setOption({...L,grid:{left:4,right:36,top:6,bottom:6,containLabel:true},
+  xAxis:{type:"value",max:0.7,axisLabel:{show:false},splitLine:{show:false},axisLine:{show:false}},
+  yAxis:{type:"category",data:["Multiplier Effect","Community Impact","Development Contribution"],axisLabel:{color:MUTED,fontSize:11},axisLine:{show:false},axisTick:{show:false}},
+  series:[{type:"bar",barWidth:"55%",label:{show:true,position:"right",formatter:p=>p.value.toFixed(2),color:INK,fontWeight:600},
+    data:[0.41,0.48,0.61].map(v=>({value:v,itemStyle:{color:PINE,borderRadius:3}}))}]});
+const modelC=echarts.init(document.getElementById("modelChart"));
+modelC.setOption({...L,grid:{left:4,right:14,top:14,bottom:22,containLabel:true},
+  xAxis:{type:"category",data:["Random Forest","Gradient Boosting","XGBoost"],axisLabel:{color:MUTED,fontSize:11},axisLine:{lineStyle:{color:GRID}}},
+  yAxis:{type:"value",axisLabel:{show:false},splitLine:{lineStyle:{color:GRID}}},
+  series:[{type:"bar",barWidth:"46%",label:{show:true,position:"top",formatter:p=>p.value.toFixed(4),color:INK,fontSize:10},
+    data:[{value:0.1587,itemStyle:{color:PINE,borderRadius:[4,4,0,0]}},
+          {value:0.3300,itemStyle:{color:"#cbb9a3",borderRadius:[4,4,0,0]}},
+          {value:0.4104,itemStyle:{color:"#cbb9a3",borderRadius:[4,4,0,0]}}]}]});
+
 // reveal + resize
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.12});
 document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
-addEventListener("resize",()=>[gauge,radar,wheel,whyB,base,fut].forEach(c=>c.resize()));
+addEventListener("resize",()=>[gauge,radar,wheel,whyB,base,fut,corr,modelC].forEach(c=>c.resize()));
 
 paintChips();recompute();
