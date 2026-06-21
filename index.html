@@ -229,10 +229,10 @@ tailwind.config={theme:{extend:{
           <select id="dev" class="w-full mt-1 border border-line rounded-md p-2.5 text-sm outline-none focus:border-pine">
             <option value="Under Developed">Under-developed</option><option value="Developing" selected>Developing</option>
             <option value="Developed">Developed</option><option value="High Developed">Highly developed</option></select></div>
-        <div><label class="text-sm text-muted">Project scale</label>
-          <select id="scl" class="w-full mt-1 border border-line rounded-md p-2.5 text-sm outline-none focus:border-pine">
-            <option value="Micro Scale">Micro</option><option value="Small Scale">Small</option>
-            <option value="Medium Scale" selected>Medium</option><option value="Large Scale">Large</option></select></div>
+        <div><label class="text-sm text-muted">Project scale <span class="text-xs">(derived)</span></label>
+          <div class="w-full mt-1 border border-pine/30 bg-pine/5 rounded-md p-2.5 text-sm">
+            <span id="scaleVal" class="serif text-pine font-semibold">Medium</span>
+            <span class="text-xs text-muted block">set by emissions &amp; host country</span></div></div>
       </div>
       <div class="mt-4"><label class="text-sm text-muted">Project methodology</label>
         <select id="methodSel" class="w-full mt-1 border border-line rounded-md p-2.5 text-sm outline-none focus:border-pine">

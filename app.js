@@ -12,6 +12,17 @@ const SCALES=["Micro Scale","Small Scale","Medium Scale","Large Scale"];
 const COUNTRIES=["Under Developed","Developing","Developed","High Developed"];
 const METHODS=["Renewables","Energy efficiency","Community-based","Re/afforestation","REDD+","IFM","HIR","Landfill gas capture","Savanna burning","Avoided deforestation"];
 const JOBS_MAX=1547;
+// Project scale is DERIVED from annual emission reduction, with country-adjusted
+// thresholds (data: under-developed countries run smaller projects, so a given
+// emission reduction implies a larger relative scale there). Boundaries from the
+// dataset medians; country factor = country median ER / global median ER.
+const SCALE_THRESH=[34500,72000,264000]; // Micro|Small , Small|Medium , Medium|Large
+const COUNTRY_THRESH={"Under Developed":0.44,"Developing":0.97,"Developed":1.01,"High Developed":1.00};
+function deriveScale(er,country){
+  const f=COUNTRY_THRESH[country]||1, t=SCALE_THRESH.map(b=>b*f);
+  return er<t[0]?"Micro Scale":er<t[1]?"Small Scale":er<t[2]?"Medium Scale":"Large Scale";
+}
+const SCALE_LABEL={"Micro Scale":"Micro","Small Scale":"Small","Medium Scale":"Medium","Large Scale":"Large"};
 // the raw Social-Impact index is heavily right-skewed (median ≈ 0.03), so the 0–100
 // score is calibrated to the empirical distribution of the 161 studied projects:
 // it is a PERCENTILE — how a project compares with the real population (≈50 = typical).
@@ -61,7 +72,8 @@ function paintChips(){[...chipWrap.children].forEach(c=>{const n=+c.dataset.n,co
 
 // scoring — the thesis formula
 function compute(){
-  const scale=sclEl.value,country=devEl.value,method=methodEl.value,er=+erEl.value;
+  const country=devEl.value,method=methodEl.value,er=+erEl.value;
+  const scale=deriveScale(er,country);                       // scale follows emissions × country
   const jobs=estimateEmployment(scale,country,method,er);   // ML-estimated Community Impact
   const SDGA=selected.size, CI=jobs/JOBS_MAX, ME=SDGA>1?1.5:(SDGA===1?1:0), DCR=1-1/Math.max(er,1.0001);
   const impact=Math.max(0,DCR*SDGA*CI*ME);
@@ -145,12 +157,17 @@ function suggestFromDesc(){const t=descEl.value.toLowerCase();
   for(const[n,kws]of Object.entries(KW)){if(kws.some(k=>t.includes(k)))selected.add(+n);}paintChips();render();}
 
 // inputs
-const devEl=document.getElementById("dev"),sclEl=document.getElementById("scl"),methodEl=document.getElementById("methodSel"),
+const devEl=document.getElementById("dev"),methodEl=document.getElementById("methodSel"),
       erEl=document.getElementById("er"),descEl=document.getElementById("desc"),
-      erVal=document.getElementById("erVal"),jobVal=document.getElementById("jobVal");
-function recompute(){erVal.textContent=(+erEl.value).toLocaleString()+" tCO₂e";
-  jobVal.textContent=estimateEmployment(sclEl.value,devEl.value,methodEl.value,+erEl.value).toLocaleString();render();}
-[devEl,sclEl,methodEl,erEl].forEach(e=>e.addEventListener("input",recompute));
+      erVal=document.getElementById("erVal"),jobVal=document.getElementById("jobVal"),scaleVal=document.getElementById("scaleVal");
+function recompute(){
+  const er=+erEl.value,country=devEl.value,scale=deriveScale(er,country);
+  erVal.textContent=er.toLocaleString()+" tCO₂e";
+  scaleVal.textContent=SCALE_LABEL[scale];
+  jobVal.textContent=estimateEmployment(scale,country,methodEl.value,er).toLocaleString();
+  render();
+}
+[devEl,methodEl,erEl].forEach(e=>e.addEventListener("input",recompute));
 descEl.addEventListener("change",suggestFromDesc);
 
 // Gen-AI auditor ladder (real research outputs, summarised)
