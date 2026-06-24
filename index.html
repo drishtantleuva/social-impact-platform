@@ -8,27 +8,36 @@
 <link rel="stylesheet" href="styles.css" />
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
   html{scroll-behavior:smooth}
-  body{background:#f6f3ec;color:#16211c;font-family:'Inter',sans-serif}
-  .serif{font-family:'Newsreader',Georgia,serif}
+  body{background:#f4f1ea;color:#16211c;font-family:'Inter',sans-serif}
+  .serif{font-family:'Fraunces',Georgia,serif}
+  .display{font-family:'Sora',system-ui,sans-serif;letter-spacing:-.025em}
   .rule{height:1px;background:#16211c;opacity:.18}
   .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
   .reveal.in{opacity:1;transform:none}
-  .secnum{font-family:'Newsreader',serif;font-style:italic;color:#b65c3a;font-size:.95rem}
+  .secnum{font-family:'Fraunces',serif;font-style:italic;color:#c8851f;font-size:.95rem}
   .kicker{letter-spacing:.24em;text-transform:uppercase;font-size:.7rem;color:#5f6b63;font-weight:600}
-  .card{background:#fffdf8;border:1px solid #e2ddce;border-radius:6px}
-  .chip{cursor:pointer;user-select:none;transition:all .15s;border:1px solid #d8d2c2;background:#fffdf8;color:#5f6b63}
+  .card{background:#fbf9f3;border:1px solid #e3ddce;border-radius:6px}
+  .chip{cursor:pointer;user-select:none;transition:all .15s;border:1px solid #d8d2c2;background:#fbf9f3;color:#5f6b63}
   .chip.on{color:#fff;border-color:transparent}
-  .btn-fill{background:#0e7c66;color:#f6f3ec}.btn-fill:hover{background:#0b6453}
-  .btn-out{border:1px solid #16211c;color:#16211c}.btn-out:hover{background:#16211c;color:#f6f3ec}
+  .btn-fill{background:#1e6f52;color:#f4f1ea}.btn-fill:hover{background:#185c44}
+  .btn-out{border:1px solid #16211c;color:#16211c}.btn-out:hover{background:#16211c;color:#f4f1ea}
   input[type=range]{-webkit-appearance:none;height:4px;border-radius:99px;background:#ddd7c8}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#0e7c66;cursor:pointer}
-  select,textarea{background:#fffdf8}
-  a{color:#0e7c66}
-  ::selection{background:#0e7c6633}
-  .drop{font-family:'Newsreader',serif;float:left;font-size:3.4rem;line-height:.8;padding:6px 10px 0 0;color:#0e7c66}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#1e6f52;cursor:pointer}
+  select,textarea{background:#fbf9f3}
+  a{color:#1e6f52}
+  ::selection{background:#e8a33d;color:#0c0d0c}
+  .drop{font-family:'Fraunces',serif;float:left;font-size:3.4rem;line-height:.8;padding:6px 10px 0 0;color:#1e6f52}
+  /* cinematic hero */
+  .grain{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+  .ring-rot{transform-origin:160px 160px;animation:sdgspin 64s linear infinite}
+  @keyframes sdgspin{to{transform:rotate(360deg)}}
+  .ring-pulse{transform-origin:160px 160px;animation:sdgpulse 6s ease-in-out infinite}
+  @keyframes sdgpulse{0%,100%{opacity:.5}50%{opacity:.9}}
+  @media (prefers-reduced-motion:reduce){.ring-rot,.ring-pulse{animation:none}}
 </style>
 </head>
 <body class="font-sans">
@@ -48,32 +57,58 @@
   </div>
 </nav>
 
-<!-- HERO -->
-<header id="top" class="max-w-5xl mx-auto px-6 pt-20 pb-16">
-  <p class="kicker reveal">University of Technology Sydney · Master of Analytics (Research) · 2024</p>
-  <h1 class="serif font-semibold tracking-tight mt-6 reveal" style="font-size:clamp(2.6rem,6.5vw,5rem);line-height:1.02">
-    A carbon credit counts the&nbsp;tonnes.<br/>It says nothing about the <span class="italic" style="color:#0e7c66">people.</span>
-  </h1>
-  <div class="grid md:grid-cols-[1.5fr_1fr] gap-10 mt-10 reveal">
-    <p class="serif text-xl md:text-2xl leading-relaxed text-ink/90">
-      Carbon projects reshape the communities that host them — through employment, health, education and economic
-      growth — yet conventional, carbon-centred evaluation leaves those outcomes unmeasured, and sometimes reproduces
-      social injustice. This research quantifies that missing half: the <span style="color:#0e7c66">social impact</span>
-      of carbon-credit projects, through the lens of the UN Sustainable Development Goals.
-    </p>
-    <div class="text-sm text-muted border-l border-line pl-6 space-y-3">
-      <p>Thesis: <span class="text-ink serif italic">An approach for quantifying the social impact of carbon-credit projects and a Gen-AI tool for UN SDG claims.</span></p>
-      <p>Supervisors: Prof. Farookh Hussain · Dr. Morteza Saberi.</p>
-      <p>Published as a Springer book chapter, 2025.</p>
-      <div class="flex gap-3 pt-2">
-        <a href="#demo" class="btn-fill rounded-full px-5 py-2.5 text-sm">Run the model</a>
-        <a href="#framework" class="btn-out rounded-full px-5 py-2.5 text-sm">The framework</a>
+<!-- HERO — cinematic, dark -->
+<header id="top" class="relative overflow-hidden" style="background:#0c0d0c;color:#f4f1ea">
+  <div class="grain"></div>
+  <div class="max-w-5xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-[1.4fr_1fr] gap-12 md:gap-8 items-center relative" style="z-index:2">
+    <div>
+      <p class="kicker reveal" style="color:#e8a33d">The human layer of climate</p>
+      <h1 class="display font-semibold mt-6 reveal" style="font-size:clamp(2.4rem,5.6vw,4.4rem);line-height:1.04">
+        A carbon credit counts the&nbsp;tonnes.<br/><span style="color:#e8a33d">It says nothing about the people.</span>
+      </h1>
+      <p class="serif leading-relaxed mt-7 reveal" style="font-size:clamp(1.05rem,1.5vw,1.3rem);color:#d8d3c6;max-width:36rem">
+        Carbon projects reshape the communities that host them — through employment, health, education and economic
+        growth — yet conventional, carbon-centred evaluation leaves those outcomes unmeasured, and sometimes reproduces
+        social injustice. This research quantifies that missing half: the <span style="color:#e8a33d">social impact</span>
+        of carbon-credit projects, through the lens of the UN Sustainable Development Goals.
+      </p>
+      <div class="flex flex-wrap gap-3 mt-8 reveal">
+        <a href="#demo" class="rounded-full px-6 py-3 text-sm font-medium" style="background:#e8a33d;color:#0c0d0c">Run the model →</a>
+        <a href="#framework" class="rounded-full px-6 py-3 text-sm" style="border:1px solid rgba(244,241,234,.28);color:#f4f1ea">The framework</a>
       </div>
+      <p class="text-xs mt-9 reveal" style="color:#8b9088;letter-spacing:.02em">
+        UTS · Master of Analytics (Research) · Springer chapter, 2025 · Prof. Farookh Hussain &amp; Dr. Morteza Saberi
+      </p>
+    </div>
+    <div class="reveal flex justify-center md:justify-end">
+      <svg viewBox="0 0 320 320" width="300" height="300" class="max-w-full" aria-hidden="true" role="presentation">
+        <circle class="ring-pulse" cx="160" cy="160" r="118" fill="none" stroke="rgba(232,163,61,.16)" stroke-width="1"/>
+        <circle cx="160" cy="160" r="86" fill="none" stroke="rgba(244,241,234,.08)" stroke-width="1"/>
+        <g class="ring-rot">
+          <g transform="rotate(0 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(21.18 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+          <g transform="rotate(42.35 160 160)"><circle cx="160" cy="42" r="6.5" fill="#f4f1ea"/></g>
+          <g transform="rotate(63.53 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(84.71 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+          <g transform="rotate(105.88 160 160)"><circle cx="160" cy="42" r="6.5" fill="#f4f1ea"/></g>
+          <g transform="rotate(127.06 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(148.24 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+          <g transform="rotate(169.41 160 160)"><circle cx="160" cy="42" r="6.5" fill="#f4f1ea"/></g>
+          <g transform="rotate(190.59 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(211.76 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+          <g transform="rotate(232.94 160 160)"><circle cx="160" cy="42" r="6.5" fill="#f4f1ea"/></g>
+          <g transform="rotate(254.12 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(275.29 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+          <g transform="rotate(296.47 160 160)"><circle cx="160" cy="42" r="6.5" fill="#f4f1ea"/></g>
+          <g transform="rotate(317.65 160 160)"><circle cx="160" cy="42" r="6.5" fill="#e8a33d"/></g>
+          <g transform="rotate(338.82 160 160)"><circle cx="160" cy="42" r="6.5" fill="#1e6f52"/></g>
+        </g>
+        <text x="160" y="152" text-anchor="middle" class="display" style="fill:#f4f1ea;font-size:30px;font-weight:600">17</text>
+        <text x="160" y="178" text-anchor="middle" style="fill:#8b9088;font-size:11px;letter-spacing:.22em;font-family:Inter">SDGs</text>
+      </svg>
     </div>
   </div>
 </header>
-
-<div class="max-w-5xl mx-auto px-6"><div class="rule"></div></div>
 
 <!-- PROBLEM -->
 <section id="problem" class="max-w-5xl mx-auto px-6 py-20">

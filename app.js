@@ -39,7 +39,7 @@ function interp(x,xs,ys){
   return ys[ys.length-1];
 }
 
-const PINE="#0e7c66", CLAY="#b65c3a", INK="#16211c", MUTED="#5f6b63", GRID="rgba(22,33,28,.10)";
+const PINE="#1e6f52", CLAY="#e8a33d", INK="#16211c", MUTED="#5f6b63", GRID="rgba(22,33,28,.10)";
 
 const SDG=[[1,"No poverty","#E5243B"],[2,"Zero hunger","#DDA63A"],[3,"Good health","#4C9F38"],
  [4,"Quality education","#C5192D"],[5,"Gender equality","#FF3A21"],[6,"Clean water","#26BDE2"],
@@ -65,7 +65,7 @@ SDG.forEach(([n,name])=>{const c=document.createElement("button");
   c.className="chip text-xs rounded-full px-2.5 py-1";c.textContent=n;c.title=name;c.dataset.n=n;
   chipWrap.appendChild(c);c.onclick=()=>{selected.has(n)?selected.delete(n):selected.add(n);paintChips();render();};});
 function paintChips(){[...chipWrap.children].forEach(c=>{const n=+c.dataset.n,col=SDG[n-1][2],on=selected.has(n);
-  c.classList.toggle("on",on);c.style.background=on?col:"#fffdf8";c.style.color=on?"#fff":MUTED;c.style.borderColor=on?col:"#d8d2c2";});}
+  c.classList.toggle("on",on);c.style.background=on?col:"#fbf9f3";c.style.color=on?"#fff":MUTED;c.style.borderColor=on?col:"#d8d2c2";});}
 
 // scoring — the thesis formula
 function compute(){
@@ -95,7 +95,7 @@ function render(){
   gauge.setOption({series:[{type:"gauge",startAngle:210,endAngle:-30,min:0,max:100,radius:"100%",
     progress:{show:true,width:11,itemStyle:{color:col}},axisLine:{lineStyle:{width:11,color:[[1,"#e6e1d3"]]}},
     axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},
-    detail:{valueAnimation:true,fontSize:38,fontFamily:"Newsreader",fontWeight:600,color:INK,offsetCenter:[0,0]},
+    detail:{valueAnimation:true,fontSize:38,fontFamily:"Fraunces",fontWeight:600,color:INK,offsetCenter:[0,0]},
     data:[{value:r.score}]}]});
   const v=document.getElementById("verdict");
   v.textContent=r.score>=66?"High impact":r.score>=40?"Moderate impact":"Limited impact";v.style.color=col;
@@ -103,11 +103,11 @@ function render(){
   const dimVals=Object.entries(DIMS).map(([d,gs])=>Math.round(100*gs.filter(g=>selected.has(g)).length/gs.length));
   radar.setOption({...L,radar:{indicator:Object.keys(DIMS).map(d=>({name:d,max:100})),radius:"64%",
     axisName:{color:MUTED,fontSize:10},splitLine:{lineStyle:{color:GRID}},splitArea:{show:false},axisLine:{lineStyle:{color:GRID}}},
-    series:[{type:"radar",data:[{value:dimVals,areaStyle:{color:"rgba(14,124,102,.18)"},lineStyle:{color:PINE},itemStyle:{color:PINE}}]}]});
+    series:[{type:"radar",data:[{value:dimVals,areaStyle:{color:"rgba(30,111,82,.18)"},lineStyle:{color:PINE},itemStyle:{color:PINE}}]}]});
 
   wheel.setOption({tooltip:{trigger:"item",formatter:p=>p.name},series:[{type:"pie",radius:["40%","74%"],center:["50%","50%"],
     label:{show:false},data:SDG.map(([n,name,c])=>({value:1,name:n+" "+name,
-      itemStyle:{color:selected.has(n)?c:"#ece7da",borderColor:"#fffdf8",borderWidth:2}}))}]});
+      itemStyle:{color:selected.has(n)?c:"#ece7da",borderColor:"#fbf9f3",borderWidth:2}}))}]});
 
   // what shapes the score — the four framework components (log contribution)
   const lg=x=>Math.log(Math.max(x,1e-6));
@@ -133,7 +133,7 @@ function render(){
     xAxis:{type:"category",data:yrs.map(y=>"Yr "+y),axisLabel:{color:MUTED,fontSize:9},axisLine:{lineStyle:{color:GRID}}},
     yAxis:{type:"value",axisLabel:{show:false},splitLine:{lineStyle:{color:GRID}}},
     series:[{type:"line",smooth:true,symbol:"circle",symbolSize:6,data:yrs.map(y=>+(r.impact*(1+0.12*y)).toFixed(2)),
-      lineStyle:{color:PINE,width:2.5},itemStyle:{color:PINE},areaStyle:{color:"rgba(14,124,102,.12)"}}]});
+      lineStyle:{color:PINE,width:2.5},itemStyle:{color:PINE},areaStyle:{color:"rgba(30,111,82,.12)"}}]});
 
   explain(r);
 }
@@ -188,7 +188,7 @@ const stake=[
 ];
 const sg=document.getElementById("stakeGrid");
 stake.forEach(([t,d])=>{const el=document.createElement("div");el.className="bg-paper p-7 reveal";
-  el.innerHTML=`<p class="serif text-xl" style="color:#0e7c66">${t}</p><p class="text-muted text-[15px] mt-2 leading-relaxed">${d}</p>`;sg.appendChild(el);});
+  el.innerHTML=`<p class="serif text-xl" style="color:#1e6f52">${t}</p><p class="text-muted text-[15px] mt-2 leading-relaxed">${d}</p>`;sg.appendChild(el);});
 
 // statistical analysis — static charts from the thesis (Table 4.4, Fig 4.2)
 const corr=echarts.init(document.getElementById("corrChart"));
